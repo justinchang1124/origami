@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Origami</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="origami.css">
+  <link href="https://fonts.googleapis.com/css?family=Merriweather&display=swap" rel="stylesheet">
+</head>
+
+<body onmouseup="mouseUp()" onload="clear()">
+  <header>
+    Origami: A CSC450 Adventure with Justin Chang
+  </header>
+
+  <div id="origamiTool">
+    <div id="origamiInput" title="Papyrus Background: https://cdn.pixabay.com/photo/2016/03/19/13/25/background-1266640_960_720.jpg">
+      <canvas id="selector" width="600" height="600"></canvas>
+      <canvas id="paper" width="600" height="600"></canvas>
+      <canvas id="background" width="600" height="600"></canvas>
+    </div>
+    <div id="origamiOutput" title="PA Coat of Arms: https://upload.wikimedia.org/wikipedia/commons/5/55/Phillips_Academy_Andover_Coat_of_Arms.png">
+      <canvas id="confirmer" width="600" height="600"></canvas>
+      <canvas id="result" width="600" height="600"></canvas>
+      <canvas id="backdrop" width="600" height="600"></canvas>
+    </div>
+  </div>
+
+  <div class="temp" onclick="showInstructions()">
+    Double click the screen on the left to get started!
+    <br>
+    <br>
+    Click Here for Acknowledgements!
+  </div>
+  <div class="hidden">
+    <p>Papyrus background credit: <a href="https://cdn.pixabay.com/photo/2016/03/19/13/25/background-1266640_960_720.jpg">https://cdn.pixabay.com/photo/2016/03/19/13/25/background-1266640_960_720.jpg</a></p>
+    <p>Coat of Arms credit: <a href="https://upload.wikimedia.org/wikipedia/commons/5/55/Phillips_Academy_Andover_Coat_of_Arms.png">https://upload.wikimedia.org/wikipedia/commons/5/55/Phillips_Academy_Andover_Coat_of_Arms.png</a></p>
+    <h3>Thanks to Dr. Knudson for teaching this class!</h3>
+  </div>
+
+  <footer>
+    <p>"It always seems impossible until it is done."
+      -Nelson Mandela</p>
+  </footer>
+
+  <script src="jquery-3.4.1.js"></script>
+  <script src="origami-mouse.js"></script>
+  <script src="origami-math.js"></script>
+  <script src="origami-draw.js"></script>
+  <script src="origami-main.js"></script>
+</body>
+
+</html>
