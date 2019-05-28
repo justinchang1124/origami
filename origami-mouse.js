@@ -109,7 +109,8 @@ function confirmerClick(event) {
     drawPaper();
     clearSelector();
     drawResult();
-    clearConfirmer();
+    confirmable = false;
+    drawConfirmer();
   }
 }
 
