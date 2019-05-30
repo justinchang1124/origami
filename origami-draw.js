@@ -142,163 +142,98 @@ function drawResult() {
   resultContext.beginPath();
   resultContext.clearRect(0, 0, 600, 600);
 
-  // resultLayers should start as a perfect copy of paperLayers
-  resultLayers = [];
-  for (var i = 0; i < paperLayers.length; i++) {
-    var copiedLayer = paperLayers[i].copy();
-    resultLayers.push(copiedLayer);
-  }
-
   // p1t = point 1 transform, p2t = point 2 transform
   var p1t = zoomToPaper(point1);
   var p2t = zoomToPaper(point2);
+  // start with resultLayers as a perfect copy
+  resultLayers = paperLayers;
+  var allIntersections = [];
 
   confirmable = true;
+  for (var i = 0; i < paperLayers.length && confirmable == true; i++) {
+    var currentIntersections = paperLayers[i].getIntersections(p1t, p2t);
 
-  for (var i = 0; i < resultLayers.length; i++) {
-    if (!resultLayers[i].isConfirmable(p1t, p2t)) {
+    // If the number of intersections between the selector
+    // and this polygon isn't even, quit.
+    if (currentIntersections.length % 2 != 0) {
       confirmable = false;
+      break;
     }
+
+    allIntersections.push(currentIntersections);
   }
 
-  if (confirmable && numberOfSelectedPoints == 2) {
-    // save the original length of the layers!
-    var originalLength = resultLayers.length;
-    // if we are folding ...
-    if (foldCut == 1) {
-      for (var i = originalLength - 1; i > -1; i--) {
-        var intersections = resultLayers[i].getIntersections(p1t, p2t);
-        var numberOfIntersections = resultLayers[i].getNumberOfIntersections(p1t, p2t);
+  // If a cutting tool is selected and 2 valid points have been selected ...
+  if (confirmable && numberOfSelectedPoints == 2 && foldCut > 0) {
+    // make resultLayers empty since we will rebuild it
+    resultLayers = [];
 
-        // If the polygon is entirely on the wrong side ...
-        if (numberOfIntersections.length == 0 && orientation(p1t, p2t, resultLayers[i].points[0]) == 1) {
-          // Flip all the points!
-          var toBeFlippedPoints = resultLayers[i].points;
-          var flippedPoints = [];
-          for (var j = 0; j < toBeFlippedPoints.length; j++) {
-            flippedPoints.push(reflect(toBeFlippedPoints[toBeFlippedPoints.length-1-j], p1t, p2t));
-          }
+    // starting from the top layer of paperLayers and going down ...
+    for (var i = paperLayers.length - 1; i > -1; i--) {
+      // find all intersections between the current polygon and the selector line
+      var numIntersects = allIntersections[i].length;
+      // just a shortcut to make it easier to type
+      var points = paperLayers[i].points;
 
-          // The new, flipped polygon.
-          var newPolygon = new Polygon(flippedPoints);
-          // Since it's going to be flipped, remove the existing one.
-          resultLayers.splice(i, 1);
-          i++;
-          // And add a new one!
-          resultLayers.push(newPolygon);
-        }
+      // The points of the polygon section on the colored triangle's side
+      var colorPoints = [];
+      // The points of the polygon section on the black triangle's side
+      var blackPoints = [];
 
-        // If we actually have to split into two parts and fold ...
-        if (numberOfIntersections.length == 2) {
-          // Theoretically speaking, a line should only intersect
-          // our types of polygons in two places ... here are the corresponding indices.
-          // Note that index1 < index2 always.
-          var index1 = numberOfIntersections[0];
-          var index2 = numberOfIntersections[1];
+      // If the polygon is on one side ...
+      if (numIntersects == 0) {
+        // If the side is colored then keep it
+        if (orientation(p1t, p2t, points[0]) == 2)
+          for (var j = 0; j < points.length; j++)
+            colorPoints.push(points[j]);
+        // Otherwise add the reflected version to the black triangle's side
+        else
+          for (var j = 0; j < points.length; j++)
+            blackPoints.push(reflect(points[j], p1t, p2t));
+      }
 
-          // The points on the line segment that cover intersections[index1]
-          var p11 = resultLayers[i].points[index1];
-          var p12 = resultLayers[i].points[(index1 + 1) % resultLayers[i].points.length];
-          // The points on the line segment that cover intersections[index2]
-          var p21 = resultLayers[i].points[index2];
-          var p22 = resultLayers[i].points[(index2 + 1) % resultLayers[i].points.length];
+      if (numIntersects == 2) {
+        var inter1 = allIntersections[i][0].point;
+        var inter2 = allIntersections[i][1].point;
+        var index1 = allIntersections[i][0].index;
+        var index2 = allIntersections[i][1].index;
 
-          // Splitting a polygon into two sets of points ... go! There are the points between
-          // index1 / index2 (newPoints2) and the rest, which have to be consolidated.
-          var newPoints1 = [];
-          var newPoints2 = [];
-          for (var j = 0; j < index1 + 1; j++)
-            newPoints1.push(new Point(resultLayers[i].points[j].x, resultLayers[i].points[j].y));
-          newPoints1.push(intersections[index1]);
-          newPoints2.push(intersections[index1]);
-          for (var j = index1 + 1; j <= index2; j++)
-            newPoints2.push(new Point(resultLayers[i].points[j].x, resultLayers[i].points[j].y));
-          newPoints2.push(intersections[index2]);
-          newPoints1.push(intersections[index2]);
-          for (var j = index2; j < resultLayers[i].points.length; j++)
-            newPoints1.push(new Point(resultLayers[i].points[j].x, resultLayers[i].points[j].y));
+        console.log(orientation(p1t, p2t, points[0]));
 
-          // olde points stay, fold points have to be folded.
-          // Depending on the direction of the colored arrow in the selector ...
-          var oldePoints;
-          var foldPoints;
-          if (orientation(p1t, p2t, p11) == 1) {
-            oldePoints = newPoints2;
-            foldPoints = newPoints1;
-          }
+        if (orientation(p1t, p2t, points[0]) == 2) {
+          for (var j = 0; j <= index1; j++)
+            colorPoints.push(points[j]);
+          colorPoints.push(inter1);
+          colorPoints.push(inter2);
+          for (var j = index2 + 1; j < points.length; j++)
+            colorPoints.push(points[j]);
 
-          if (orientation(p1t, p2t, p11) == 2) {
-            oldePoints = newPoints1;
-            foldPoints = newPoints2;
-          }
+          blackPoints.push(inter1);
+          blackPoints.push(inter2);
+          for (var j = index2; j > index1; j--)
+            blackPoints.push(reflect(points[j], p1t, p2t));
 
-          // replace the existing polygon with what remains
-          resultLayers[i] = new Polygon(oldePoints);
+        } else {
+          colorPoints.push(inter2);
+          colorPoints.push(inter1);
+          for (var j = index1 + 1; j < index2 + 1; j++)
+            colorPoints.push(points[j]);
 
-          var flippedPoints = [];
-          for (var j = 0; j < foldPoints.length; j++) {
-            // reverse the order! Imagine flipping a sheet ...
-            flippedPoints.push(reflect(foldPoints[foldPoints.length - 1 - j], p1t, p2t));
-          }
-
-          var newPolygonFlipped = new Polygon(flippedPoints);
-          resultLayers.push(newPolygonFlipped);
+          for (var j = points.length - 1; j > index2; j--)
+            blackPoints.push(reflect(points[j], p1t, p2t));
+          blackPoints.push(inter2);
+          blackPoints.push(inter1);
+          for (var j = index1; j > -1; j--)
+            blackPoints.push(reflect(points[j], p1t, p2t));
         }
       }
-    }
-    if (foldCut == 2) {
-      for (var i = 0; i < originalLength; i++) {
-        var intersections = resultLayers[i].getIntersections(p1t, p2t);
-        var numberOfIntersections = resultLayers[i].getNumberOfIntersections(p1t, p2t);
+      // I could add cases for concave polygons (where numIntersects > 2)
+      // but that is very complicated and unlikely to occur
+      if (blackPoints.length > 0 && foldCut == 1)
+        resultLayers.push(new Polygon(blackPoints));
 
-        // If the polygon is entirely on the wrong side ...
-        if (numberOfIntersections.length == 0 && orientation(p2t, p2t, resultLayers[i].points[0]) == 1) {
-          // Remove the existing one.
-          resultLayers.splice(i, 1);
-          i++;
-        }
-
-        // If we have to cut ...
-        if (numberOfIntersections.length == 2) {
-          var index1 = numberOfIntersections[0];
-          var index2 = numberOfIntersections[1];
-
-          // The points on the line segment that cover intersections[index1]
-          var p11 = resultLayers[i].points[index1];
-          var p12 = resultLayers[i].points[(index1 + 1) % resultLayers[i].points.length];
-          // The points on the line segment that cover intersections[index2]
-          var p21 = resultLayers[i].points[index2];
-          var p22 = resultLayers[i].points[(index2 + 1) % resultLayers[i].points.length];
-
-          // Splitting a polygon into two sets of points ... go! There are the points between
-          // index1 / index2 (newPoints2) and the rest, which have to be consolidated.
-          var newPoints1 = [];
-          var newPoints2 = [];
-          for (var j = 0; j < index1 + 1; j++)
-            newPoints1.push(new Point(resultLayers[i].points[j].x, resultLayers[i].points[j].y));
-          newPoints1.push(intersections[index1]);
-          newPoints2.push(intersections[index1]);
-          for (var j = index1 + 1; j <= index2; j++)
-            newPoints2.push(new Point(resultLayers[i].points[j].x, resultLayers[i].points[j].y));
-          newPoints2.push(intersections[index2]);
-          newPoints1.push(intersections[index2]);
-          for (var j = index2; j < resultLayers[i].points.length; j++)
-            newPoints1.push(new Point(resultLayers[i].points[j].x, resultLayers[i].points[j].y));
-
-          // olde points stay, fold points are cut out in this case.
-          // Depending on the direction of the colored arrow in the selector ...
-          var oldePoints;
-
-          if (orientation(p1t, p2t, p11) == 1)
-            oldePoints = newPoints2;
-
-          if (orientation(p1t, p2t, p11) == 2)
-            oldePoints = newPoints1;
-
-          // A new polygon with the old points ... how ironic
-          resultLayers[i] = new Polygon(oldePoints);
-        }
-      }
+      if (colorPoints.length > 0)
+        resultLayers.unshift(new Polygon(colorPoints));
     }
   }
 
@@ -309,7 +244,7 @@ function drawResult() {
   for (var i = 0; i < resultLayers.length; i++) {
     resultContext.beginPath();
     var color = startingPoint + i * fragment;
-    resultContext.fillStyle = "rgba(" + color / 2 + "," + color / 2 + "," + color + ",0.95)";
+    resultContext.fillStyle = "rgba(" + color * colorFactor + "," + color * colorFactor + "," + color + ",0.95)";
     // Now draw!
     resultLayers[i].draw(resultContext);
   }

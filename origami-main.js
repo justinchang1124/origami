@@ -26,6 +26,8 @@ var paperLayers;
 var resultLayers;
 // Whether or not the current fold or cut can be performed.
 var confirmable;
+// The degree of coloring
+var colorFactor = 0.5;
 
 // List of all events: https://www.w3schools.com/jsref/dom_obj_event.asp
 // How to add an event listener:

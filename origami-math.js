@@ -92,7 +92,7 @@ function orientation(a, b, c) {
 // Let's make a polygon object!
 function Polygon(points) {
   // It should have an array that represents the points in it.
-  this.points = points;
+  this.points = [];
 
   // Let's draw it on a context! We won't begin the path
   // since we don't want to store colors here ...
@@ -106,6 +106,8 @@ function Polygon(points) {
       }
       context.lineTo(start.x, start.y);
       context.fill();
+      context.fillStyle = "black";
+      context.stroke();
     }
   }
 
@@ -117,35 +119,27 @@ function Polygon(points) {
     return new Polygon(copiedPoints);
   }
 
-  // Returns the intersections of this polygon with the line p1, p2
+  // Returns the intersections with indices of this polygon with the line p1, p2
   this.getIntersections = function(p1, p2) {
     var intersections = [];
 
     // All the intersection points for each
-    for (var i = 0; i < points.length; i++)
-      intersections.push(getIntersection(p1, p2, points[i], points[(i + 1) % points.length]));
+    for (var i = 0; i < points.length; i++) {
+      var point = getIntersection(p1, p2, points[i], points[(i + 1) % points.length]);
+      if (!(point === false))
+        intersections.push(new PointIndex(point, i));
+    }
 
     return intersections;
   }
 
-  // Returns the intersections - not falses - of this polygon with the line p1, p2
-  this.getNumberOfIntersections = function(p1, p2) {
-    var intersections = this.getIntersections(p1, p2);
-    var numberOfIntersections = [];
-
-    for (var i = 0; i < intersections.length; i++)
-      // strict typing since getIntersections can return arrays with points or booleans
-      if (!(intersections[i] === false))
-        numberOfIntersections.push(i);
-
-    return numberOfIntersections;
-  }
-
-  // Can you confirm that neither point 1 nor point 2 are inside this polygon?
-  this.isConfirmable = function(p1, p2) {
-    // If there is an even number of intersections between 12 and the polygon,
-    // then the line segment doesn't have an endpoint in the polygon.
-    return this.getNumberOfIntersections(p1, p2).length % 2 == 0;
+  // counterclockwise always
+  if (orientation(points[0], points[1], points[2]) == 2) {
+    for (var i = points.length - 1; i > -1; i--)
+      this.points.push(points[i]);
+  } else {
+    for (var i = 0; i < points.length; i++)
+      this.points.push(points[i]);
   }
 }
 
@@ -177,46 +171,8 @@ function reflect(p, p0, p1) {
   return new Point(x, y);
 }
 
-// This is actually unnecessary since our current system prevents holes from
-// forming and layers are represented by Polygons.
-// But I'll keep it in case the project expands to unfolding cut pieces!
-
-// function Layer(innerPolygons, outerPolygons) {
-//   this.outerPolygons = outerPolygons;
-//   this.innerPolygons = innerPolygons;
-//
-//   this.draw = function(context) {
-//     for (var i = 0; i < outerPolygons.length; i++) {
-//       outerPolygons[i].draw(context);
-//     }
-//     if (innerPolygons.length > 0) {
-//       for (var i = 0; i < innerPolygons.length; i++) {
-//         innerPolygons[i].draw(context);
-//       }
-//     }
-//
-//     context.fill("nonzero");
-//   }
-//
-//   this.copy = function() {
-//     var copiedLayer = new Layer([], []);
-//     for (var i = 0; i < outerPolygons.length; i++) {
-//       copiedLayer.outerPolygons.push(this.outerPolygons[i].copy());
-//     }
-//     for (var i = 0; i < innerPolygons.length; i++) {
-//       copiedLayer.innerPolygons.push(this.innerPolygons[i].copy());
-//     }
-//     return copiedLayer;
-//   }
-//
-//   this.isConfirmable = function(p1, p2) {
-//     for (var i = 0; i < outerPolygons.length; i++) {
-//       var length = outerPolygons[i].intersects(p1, p2).length;
-//       if (length != 2 && length != 0) {
-//         return false;
-//       }
-//     }
-//
-//     return true;
-//   }
-// }
+// Creates a point with its relative index in a polygon
+function PointIndex(point, index) {
+  this.point = point;
+  this.index = index;
+}
