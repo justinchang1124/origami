@@ -92,7 +92,7 @@ function orientation(a, b, c) {
 // Let's make a polygon object!
 function Polygon(points) {
   // It should have an array that represents the points in it.
-  this.points = [];
+  this.points = points;
 
   // Let's draw it on a context! We won't begin the path
   // since we don't want to store colors here ...
@@ -131,15 +131,6 @@ function Polygon(points) {
     }
 
     return intersections;
-  }
-
-  // counterclockwise always
-  if (orientation(points[0], points[1], points[2]) == 2) {
-    for (var i = points.length - 1; i > -1; i--)
-      this.points.push(points[i]);
-  } else {
-    for (var i = 0; i < points.length; i++)
-      this.points.push(points[i]);
   }
 }
 
