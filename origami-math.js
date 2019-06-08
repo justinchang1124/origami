@@ -132,15 +132,6 @@ function Polygon(points) {
 
     return intersections;
   }
-
-  // counterclockwise always
-  if (orientation(points[0], points[1], points[2]) == 2) {
-    for (var i = points.length - 1; i > -1; i--)
-      this.points.push(points[i]);
-  } else {
-    for (var i = 0; i < points.length; i++)
-      this.points.push(points[i]);
-  }
 }
 
 /**
