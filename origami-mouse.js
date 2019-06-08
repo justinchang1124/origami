@@ -105,7 +105,7 @@ function confirmerClick(event) {
 
   if (canBeConfirmed) {
     // Make the calculated result the new paperLayers
-    paperLayers.push(resultLayers);
+    paperLayers = resultLayers;
     drawPaper();
     clearSelector();
     drawResult();
