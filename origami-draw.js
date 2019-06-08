@@ -43,17 +43,19 @@ function clear() {
 function drawPaper() {
   paperContext.beginPath();
   paperContext.clearRect(0, 0, 600, 600);
+  
+  var currentSheet = paperLayers[paperLayers.length-1];
 
   // We now make a color gradient ... darker colors the further away the sheet of paper
-  var fragment = Math.floor(255 / paperLayers.length / 2);
-  var startingPoint = 255 - (paperLayers.length - 1) * fragment;
+  var fragment = Math.floor(255 / currentSheet.length / 2);
+  var startingPoint = 255 - (currentSheet.length - 1) * fragment;
 
-  for (var i = 0; i < paperLayers.length; i++) {
+  for (var i = 0; i < currentSheet.length; i++) {
     paperContext.beginPath();
     var color = startingPoint + i * fragment;
     paperContext.fillStyle = "rgba(" + color / 2 + "," + color / 2 + "," + color + ",0.95)";
     // Now draw!
-    paperLayers[i].draw(paperContext);
+    currentSheet[i].draw(paperContext);
   }
 }
 
@@ -141,17 +143,19 @@ function drawSelector() {
 function drawResult() {
   resultContext.beginPath();
   resultContext.clearRect(0, 0, 600, 600);
+  
+  var currentSheet = paperLayers[paperLayers.length-1];
 
   // p1t = point 1 transform, p2t = point 2 transform
   var p1t = zoomToPaper(point1);
   var p2t = zoomToPaper(point2);
   // start with resultLayers as a perfect copy
-  resultLayers = paperLayers;
+  resultLayers = currentSheet;
   var allIntersections = [];
 
   confirmable = true;
-  for (var i = 0; i < paperLayers.length && confirmable == true; i++) {
-    var currentIntersections = paperLayers[i].getIntersections(p1t, p2t);
+  for (var i = 0; i < currentSheet.length && confirmable == true; i++) {
+    var currentIntersections = currentSheet[i].getIntersections(p1t, p2t);
 
     // If the number of intersections between the selector
     // and this polygon isn't even, quit.
@@ -169,11 +173,11 @@ function drawResult() {
     resultLayers = [];
 
     // starting from the top layer of paperLayers and going down ...
-    for (var i = paperLayers.length - 1; i > -1; i--) {
+    for (var i = currentSheet.length - 1; i > -1; i--) {
       // find all intersections between the current polygon and the selector line
       var numIntersects = allIntersections[i].length;
       // just a shortcut to make it easier to type
-      var points = paperLayers[i].points;
+      var points = currentSheet[i].points;
 
       // The points of the polygon section on the colored triangle's side
       var colorPoints = [];
@@ -197,8 +201,6 @@ function drawResult() {
         var inter2 = allIntersections[i][1].point;
         var index1 = allIntersections[i][0].index;
         var index2 = allIntersections[i][1].index;
-
-        console.log(orientation(p1t, p2t, points[0]));
 
         if (orientation(p1t, p2t, points[0]) == 2) {
           for (var j = 0; j <= index1; j++)
