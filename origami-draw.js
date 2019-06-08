@@ -23,9 +23,7 @@ function clearPaperResultConfirmer() {
   resultLayers = [];
   confirmable = false;
   var sheetOfPaper = new Polygon([new Point(50, 50), new Point(50, 550), new Point(550, 550), new Point(550, 50)]);
-  var currentSheet = [];
-  currentSheet.push(sheetOfPaper);
-  paperLayers.push(currentSheet);
+  paperLayers.push(sheetOfPaper);
   drawPaper();
   drawResult();
   drawConfirmer();
