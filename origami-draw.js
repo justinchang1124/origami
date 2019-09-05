@@ -16,9 +16,11 @@ function clearSelector() {
   drawSelector();
 }
 
-// these ones are really grouped together, so it's difficult
-// to separate the functions out without making them stubs
-function clearPaperResultConfirmer() {
+// Resets the entire system.
+function clear() {
+  clearZoom();
+  clearSelector();
+  previousStates = [];
   paperLayers = [];
   resultLayers = [];
   confirmable = false;
@@ -27,13 +29,6 @@ function clearPaperResultConfirmer() {
   drawPaper();
   drawResult();
   drawConfirmer();
-}
-
-// Resets the entire system.
-function clear() {
-  clearZoom();
-  clearSelector();
-  clearPaperResultConfirmer();
 }
 
 // Below are all the drawing functions. They come from:
@@ -135,6 +130,7 @@ function drawSelector() {
   // zoom buttons
   makeButton(520, 560, 30, 30, "−", "rgba(255,255,255,0.5)", selectorContext);
   makeButton(560, 560, 30, 30, "+", "rgba(255,255,255,0.5)", selectorContext);
+  makeButton(10, 560, 30, 30, "≈", "rgba(255,255,255,0.5)", selectorContext);
 }
 
 // draws the result on the right side ... this one is where the math is really crazy!!
@@ -197,8 +193,6 @@ function drawResult() {
         var inter2 = allIntersections[i][1].point;
         var index1 = allIntersections[i][0].index;
         var index2 = allIntersections[i][1].index;
-
-        console.log(orientation(p1t, p2t, points[0]));
 
         if (orientation(p1t, p2t, points[0]) == 2) {
           for (var j = 0; j <= index1; j++)

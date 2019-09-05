@@ -28,6 +28,8 @@ var resultLayers;
 var confirmable;
 // The degree of coloring
 var colorFactor = 0.5;
+// The previous states of the origami.
+var previousLayers;
 
 // List of all events: https://www.w3schools.com/jsref/dom_obj_event.asp
 // How to add an event listener:

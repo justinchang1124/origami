@@ -16,6 +16,7 @@ function selectorClick(event) {
   // two booleans: whether the mouse is over the zoom-out button or the zoom-in button.
   var zoomOut = mousePosition.overRectangle(new Point(520, 560), 30, 30);
   var zoomIn = mousePosition.overRectangle(new Point(560, 560), 30, 30);
+  var approx = mousePosition.overRectangle(new Point(10, 560), 30, 30);
 
   // zoom functionality
   if (zoomOut) {
@@ -30,6 +31,15 @@ function selectorClick(event) {
     drawPaper();
     drawResult();
     drawConfirmer();
+    return;
+  }
+  if (approx)
+  {
+    var minX, minY, maxX, maxY;
+    for (var i = 0; i < paperLayers.length; i++)
+    {
+      var polygonBoundingBox = paperLayers[i].getBoundingBox();
+    }
     return;
   }
 

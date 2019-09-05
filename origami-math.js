@@ -92,7 +92,7 @@ function orientation(a, b, c) {
 // Let's make a polygon object!
 function Polygon(points) {
   // It should have an array that represents the points in it.
-  this.points = [];
+  this.points = points;
 
   // Let's draw it on a context! We won't begin the path
   // since we don't want to store colors here ...
@@ -117,6 +117,29 @@ function Polygon(points) {
     for (var i = 0; i < this.points.length; i++)
       copiedPoints.push(new Point(this.points[i].x, this.points[i].y));
     return new Polygon(copiedPoints);
+  }
+
+  // Returns the top-left and bottom-right corners of the rectangle bounding this polygon.
+  this.getBoundingBox = function() {
+    var xMin = points[0].x;
+    var xMax = points[0].x;
+    var yMin = points[0].y;
+    var yMax = points[0].y;
+
+    for (var i = 1; i < points.length; i++) {
+      var x = points[i].x;
+      var y = points[i].y;
+      if (x < xMin)
+        xMin = x;
+      if (y < yMin)
+        yMin = y;
+      if (x > xMax)
+        xMax = x;
+      if (y > yMax)
+        yMax = y;
+    }
+
+    return [xMin, yMin, xMax, yMax];
   }
 
   // Returns the intersections with indices of this polygon with the line p1, p2
